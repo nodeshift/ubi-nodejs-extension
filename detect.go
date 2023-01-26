@@ -1,7 +1,5 @@
 package ubi8nodeenginebuildpackextension
 
-// package ubi8nodeenginebuildpackextension
-
 import (
 	"fmt"
 	"os"

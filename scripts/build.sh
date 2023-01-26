@@ -56,7 +56,7 @@ function run::build() {
 
       echo "Success!"
 
-      for name in detect build generate; do
+      for name in detect generate; do
         printf "%s" "Linking ${name}... "
 
         ln -sf "run" "${name}"
