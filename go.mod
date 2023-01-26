@@ -9,6 +9,12 @@ require (
 )
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.1 // indirect
 	github.com/onsi/gomega v1.25.0 // indirect
+	github.com/paketo-buildpacks/libreload-packit v0.0.1 // indirect
+	github.com/paketo-buildpacks/node-start v1.0.0 // indirect
+	github.com/paketo-buildpacks/npm-start v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
+	golang.org/x/net v0.5.0 // indirect
 )
