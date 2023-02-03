@@ -33,13 +33,24 @@ func nodeApplicationExists(workingDir string, applicationFinder nodestart.Applic
 	return applicationFinder.Find(workingDir, os.Getenv("BP_LAUNCHPOINT"), os.Getenv("BP_NODE_PROJECT_PATH"))
 }
 
-func Detect() {
-	planPath := os.Args[2]
+// ExitHandler serves as the interface for types that can handle an error
+// during the Detect or Build functions. ExitHandlers are responsible for
+// translating error values into exit codes according the specification:
+// https://github.com/buildpacks/spec/blob/main/buildpack.md#detection and
+// https://github.com/buildpacks/spec/blob/main/buildpack.md#build.
+//
+//go:generate faux --interface ExitHandlerInterface --output fakes/exit_handler.go
+type ExitHandlerInterface interface {
+	Error(err error)
+}
+
+func Detect(config OptionConfig) {
+	planPath := config.Args[2]
 
 	// likely move these to main.go ?
 	workingDir, err := os.Getwd()
 	if err != nil {
-		os.Exit(100)
+		config.ExitHandler.Error(Fail)
 		return
 	}
 	projectPathParser := npmstart.NewProjectPathParser()
@@ -49,7 +60,7 @@ func Detect() {
 
 	packageJSON, err := packageJSONExists(workingDir, projectPathParser)
 	if err != nil {
-		os.Exit(100)
+		config.ExitHandler.Error(Fail)
 		return
 	}
 
@@ -57,12 +68,12 @@ func Detect() {
 		// no package.json so look for know Node.js application files
 		path, err := nodeApplicationExists(workingDir, nodeApplicationFinder)
 		if err != nil {
-			os.Exit(100)
+			config.ExitHandler.Error(Fail)
 			return
 		}
-		// if no applicaiton was found then we don't need to provide node
+		// if no application was found then we don't need to provide node
 		if path == "" {
-			os.Exit(100)
+			config.ExitHandler.Error(Fail)
 			return
 		}
 	}
@@ -80,10 +91,10 @@ func Detect() {
 
 	_, err = appendContentTofile(planPath, content)
 	if err != nil {
-		os.Exit(100)
+		config.ExitHandler.Error(Fail)
 		return
 	}
-	os.Exit(0)
+	config.ExitHandler.Error(nil)
 }
 
 func appendContentTofile(filename string, content string) (string, error) {
