@@ -214,6 +214,7 @@ github.com/GoogleCloudPlatform/docker-credential-gcr v2.0.5+incompatible/go.mod 
 github.com/Masterminds/goutils v1.1.0/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
+github.com/Masterminds/semver v1.5.0 h1:H65muMkzWKEuNDnfl9d70GUjFniHKHRbFPGBuZ3QEww=
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/semver/v3 v3.1.1/go.mod h1:VPu/7SZ7ePZ3QOrcuXROw5FAcLl4a0cBrbBpGY/8hQs=
 github.com/Masterminds/semver/v3 v3.2.0 h1:3MEsd0SM6jqZojhjLWWeBY+Kcjy9i6MQAeY7YgDP83g=
@@ -1190,6 +1191,8 @@ github.com/paketo-buildpacks/node-start v1.0.0 h1:I9JxOGpuTNnD7gjc/VFdFneUsakLTm
 github.com/paketo-buildpacks/node-start v1.0.0/go.mod h1:0IYhKBoY5e+jkQsSmmqJpZJ6mYL4RMhZ+Zd1vh/kouA=
 github.com/paketo-buildpacks/npm-start v1.0.0 h1:ZzWD+7EIJxM6xxS+V6v18o3kT8jxOpTwoEhfL4qMpik=
 github.com/paketo-buildpacks/npm-start v1.0.0/go.mod h1:DFOWdxPKLl9/B+Qrulhbcu2WhkqyZo0jJ4rIsEXuX5s=
+github.com/paketo-buildpacks/npm-start v1.0.1 h1:NCaTFD6bbPoWeVqXKiL6d139dgJqAiFUY9GMHGng6Zk=
+github.com/paketo-buildpacks/npm-start v1.0.1/go.mod h1:qmJImrGenzvP7GFFzsZGXWBaCEWzg+IyyPwQuwD4R18=
 github.com/paketo-buildpacks/packit/v2 v2.8.0 h1:dqkktZz8aLTnVcr+t6ZlyIYTX9TjGBlATQ40iGoYNNo=
 github.com/paketo-buildpacks/packit/v2 v2.8.0/go.mod h1:xEFzb44/mnmqQikhD0GkRvzIbxziVIDUj3GE066h2iI=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=

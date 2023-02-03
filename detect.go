@@ -10,22 +10,35 @@ import (
 )
 
 // functionality from npm-start buildpack, also some overlap with npm-install
-func packageJSONExists(workingDir string, projectPathParser npmstart.PathParser) (path string, err error) {
+func packageJSONWithStartExists(workingDir string, projectPathParser npmstart.PathParser) (path string, err error) {
 
 	projectPath, err := projectPathParser.Get(workingDir)
 	if err != nil {
 		return "", err
 	}
 
-	path = filepath.Join(projectPath, "package.json")
-	_, err = os.Stat(path)
+	packageJSONPath := filepath.Join(projectPath, "package.json")
+	_, err = os.Stat(packageJSONPath)
 	if err != nil {
 		if os.IsNotExist(err) {
+			// no package.json
 			return "", nil
 		}
 		return "", err
 	}
-	return path, nil
+
+	var pkg *npmstart.PackageJson
+	pkg, err = npmstart.NewPackageJsonFromPath(filepath.Join(projectPath, "package.json"))
+	if err != nil {
+		return "", err
+	}
+
+	if pkg.Scripts.Start != "" {
+		// package.json has start command
+		return packageJSONPath, nil
+	}
+
+	return "", nil
 }
 
 // functionality from node-start
@@ -58,14 +71,14 @@ func Detect(config OptionConfig) {
 
 	fmt.Printf("Extension detect, with plan path %s", planPath)
 
-	packageJSON, err := packageJSONExists(workingDir, projectPathParser)
+	packageJSON, err := packageJSONWithStartExists(workingDir, projectPathParser)
 	if err != nil {
 		config.ExitHandler.Error(Fail)
 		return
 	}
 
 	if packageJSON == "" {
-		// no package.json so look for know Node.js application files
+		// no package.json so look for Node.js application files
 		path, err := nodeApplicationExists(workingDir, nodeApplicationFinder)
 		if err != nil {
 			config.ExitHandler.Error(Fail)
