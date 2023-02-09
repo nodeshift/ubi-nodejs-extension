@@ -16,11 +16,12 @@ func main() {
 type fn func()
 
 type DetectFunction func(options ubi8nodeenginebuildpackextension.OptionConfig)
+type GenerateFunction func(options ubi8nodeenginebuildpackextension.OptionConfig)
 
 // Run combines the invocation of both build and detect into a single entry
 // point. Calling Run from an executable with a name matching "build" or
 // "detect" will result in the matching DetectFunc or BuildFunc being called.
-func run(Detect DetectFunction, Generate fn, options ...ubi8nodeenginebuildpackextension.Option) {
+func run(Detect DetectFunction, Generate GenerateFunction, options ...ubi8nodeenginebuildpackextension.Option) {
 	config := ubi8nodeenginebuildpackextension.OptionConfig{
 		ExitHandler: ubi8nodeenginebuildpackextension.NewExitHandler(),
 		Args:        os.Args,
@@ -46,7 +47,7 @@ func run(Detect DetectFunction, Generate fn, options ...ubi8nodeenginebuildpacke
 		Detect(config)
 
 	case "generate":
-		Generate()
+		Generate(config)
 
 	default:
 		config.ExitHandler.Error(fmt.Errorf("failed to run buildpack: unknown lifecycle phase %q", phase))

@@ -14,7 +14,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/draft"
 )
 
-func Generate() {
+func Generate(config OptionConfig) {
 
 	// Extract the version of Node.js to install, default is 18
 	// This logic will vary based on what is supported by the ubi image
@@ -22,8 +22,8 @@ func Generate() {
 	entryResolver := draft.NewPlanner()
 
 	var plan packit.BuildpackPlan
-	fmt.Println(plan)
-	var _, err = toml.DecodeFile(os.Getenv("CNB_BP_PLAN_PATH"), &plan)
+	planPath := os.Getenv("CNB_BP_PLAN_PATH")
+	var _, err = toml.DecodeFile(planPath, &plan)
 
 	// from nodejs-engine buildpack, keep in sync
 	priorities := []interface{}{
@@ -34,6 +34,10 @@ func Generate() {
 	}
 
 	entry, _ := entryResolver.Resolve("node", plan.Entries, priorities)
+	if entry.Name == "" {
+		config.ExitHandler.Error(Fail)
+	}
+
 	version := entry.Metadata["version"]
 
 	if version != nil && version != "" {
@@ -41,7 +45,7 @@ func Generate() {
 		if err != nil {
 			// Handle constraint not being parseable.
 			fmt.Println("Could not parse Node.js version")
-			os.Exit(100)
+			config.ExitHandler.Error(Fail)
 		}
 
 		// we should make this check as close as possible to what
@@ -56,39 +60,39 @@ func Generate() {
 			NODEJS_VERSION = 16
 		} else {
 			fmt.Println("Unsupported Node.js version")
-			os.Exit(100)
+			config.ExitHandler.Error(Fail)
 		}
 	}
 	fmt.Println("VERSION:", NODEJS_VERSION)
 
 	// Below variables has to be fetch from the env
-	CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
+	// CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
 	CNB_STACK_ID := os.Getenv("CNB_STACK_ID")
 
 	// INPUT ARGUMENTS
 	fmt.Println("--->", os.Args)
-	platformDir := os.Args[2]
-	envDir := platformDir + "/env"
-	outputDir := os.Args[1]
-	planPath := os.Args[3]
+	outputDir := config.Args[1]
 
 	//  Patched by build.sh with correct values
 	CNB_USER_ID := 1000
 	CNB_GROUP_ID := 1000
 
-	fmt.Println("GO****************************")
-	fmt.Println("ouput_dir", outputDir)
-	fmt.Println("plan_path", planPath)
-	fmt.Println("env_dir", envDir)
-	fmt.Println("extension build env vars!!")
-	fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
-	fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
-	fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
-	fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
-	fmt.Println("****************************")
-	fmt.Println("extension plan...")
-	readFileAndPrintToStdout(planPath)
-	fmt.Println("****************************")
+	// fmt.Println("GO****************************")
+
+	// fmt.Println("===>Args", config.Args, "<====", "===>", os.Args, "<==")
+	// fmt.Println("ouput_dir", outputDir)
+	// fmt.Println("plan_path", planPath)
+	// fmt.Println("thats the plan:", plan)
+
+	// fmt.Println("extension build env vars!!")
+	// // fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
+	// fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
+	// fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
+	// fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
+	// fmt.Println("****************************")
+	// fmt.Println("extension plan...")
+	// readFileAndPrintToStdout(planPath)
+	// fmt.Println("****************************")
 
 	// return
 	//  TODO .. read engines from $3 to select
@@ -130,7 +134,10 @@ RUN microdnf -y module enable nodejs:%d`, NODEJS_VERSION)
 		runDockerfileContent = "FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
 	}
 
-	writeContentToFile(runDockerfileContent, outputDir+"/run.Dockerfile")
+	err = writeContentToFile(runDockerfileContent, outputDir+"/run.Dockerfile")
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+	}
 
 	// fmt.Println("===>", runDockerfileContent, "<===")
 
@@ -140,28 +147,28 @@ RUN microdnf -y module enable nodejs:%d`, NODEJS_VERSION)
 
 	//TODO return something that will exit the whole process
 	if err != nil {
-		fmt.Println(err.Error())
-		return
+		config.ExitHandler.Error(Fail)
 	}
 	fmt.Print(string(stdout))
 }
 
-func writeContentToFile(fileContent string, filepath string) {
+func writeContentToFile(fileContent string, filepath string) (Error error) {
 
 	f, err := os.Create(filepath)
 
 	//TODO return something that will exit the whole process
 	if err != nil {
-		log.Fatal(err)
-		return
+		return err
 	}
 
 	n, err := f.WriteString(fileContent + "\n")
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	fmt.Println(n)
 	f.Sync()
+
+	return nil
 }
 
 func readFileAndPrintToStdout(filepath string) {
