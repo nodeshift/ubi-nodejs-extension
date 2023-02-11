@@ -13,35 +13,23 @@ import (
 	"github.com/sclevine/spec"
 
 	"github.com/BurntSushi/toml"
-
-	fakes "github.com/nodeshift/ubi8-node-engine-buildack-extension/fakes"
 )
 
 func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 	var (
-		Expect      = NewWithT(t).Expect
-		exitHandler fakes.ExitHandlerInterface
-		config      ubi8nodeenginebuildpackextension.OptionConfig
-		workingDir  string
-		// platformDir   string
-		outputDir     string
-		planPath      string
-		testBuildPlan packit.BuildPlan
-		buf           = new(bytes.Buffer)
+		Expect         = NewWithT(t).Expect
+		workingDir     string
+		planPath       string
+		testBuildPlan  packit.BuildpackPlan
+		buf            = new(bytes.Buffer)
+		generateResult packit.GenerateResult
+		err            error
 	)
 
 	context("Generate called with NO node in buildplan", func() {
 		it.Before(func() {
 			workingDir = t.TempDir()
-			// platformDir = t.TempDir()
-			outputDir = t.TempDir()
-
-			testBuildPlan = packit.BuildPlan{
-				Requires: []packit.BuildPlanRequirement{
-					// {Name: "node"},
-				},
-			}
 
 			err := toml.NewEncoder(buf).Encode(testBuildPlan)
 			fmt.Print(err)
@@ -49,17 +37,18 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), buf.Bytes(), 0600)).To(Succeed())
 			// planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", outputDir},
-			}
 			os.Chdir(workingDir)
 		})
 
 		it("Node no longer requested in buildplan", func() {
-			ubi8nodeenginebuildpackextension.Generate(config)
-			Expect(exitHandler.ErrorCall.Receives.Err.Error()).To(Equal("failed"))
+			generateResult, err = ubi8nodeenginebuildpackextension.Generate()(packit.GenerateContext{
+				WorkingDir: workingDir,
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{},
+				},
+			})
+			Expect(err).To(HaveOccurred())
+			Expect(generateResult.BuildDockerfile).To(BeNil())
 			// writeContentToFile(buildDockerfileContent, outputDir+"/build.Dockerfile")
 		})
 	}, spec.Sequential())
@@ -68,16 +57,6 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 		it.Before(func() {
 
 			workingDir = t.TempDir()
-			// platformDir = t.TempDir()
-			outputDir = t.TempDir()
-
-			testBuildPlan := packit.BuildpackPlan{
-				Entries: []packit.BuildpackPlanEntry{
-					{
-						Name: "node",
-					},
-				},
-			}
 
 			err := toml.NewEncoder(buf).Encode(testBuildPlan)
 			fmt.Print(err)
@@ -86,18 +65,22 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(os.WriteFile(planPath, buf.Bytes(), 0600)).To(Succeed())
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", outputDir},
-			}
 			os.Chdir(workingDir)
 		})
 
 		it("Node specific version of node requested", func() {
-			ubi8nodeenginebuildpackextension.Generate(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			// writeContentToFile(buildDockerfileContent, outputDir+"/build.Dockerfile")
+			generateResult, err = ubi8nodeenginebuildpackextension.Generate()(packit.GenerateContext{
+				WorkingDir: workingDir,
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "node",
+						},
+					},
+				},
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(generateResult).NotTo(Equal(nil))
 		})
 	}, spec.Sequential())
 

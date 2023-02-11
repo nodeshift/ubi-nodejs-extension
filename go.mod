@@ -17,8 +17,11 @@ require (
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/paketo-buildpacks/libreload-packit v0.0.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/text v0.6.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/paketo-buildpacks/packit/v2 => ../packit
