@@ -1,0 +1,1 @@
+FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-18

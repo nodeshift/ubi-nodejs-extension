@@ -1,0 +1,1 @@
+FROM {{.Registry}}/ubi8-paketo-run-nodejs-{{.NODEJS_VERSION}}
