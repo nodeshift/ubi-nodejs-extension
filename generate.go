@@ -1,12 +1,14 @@
 package ubi8nodeenginebuildpackextension
 
 import (
-	"bufio"
+	"bytes"
+	_ "embed"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"os/exec"
+
+	"text/template"
 
 	"github.com/BurntSushi/toml"
 	"github.com/Masterminds/semver/v3"
@@ -14,28 +16,47 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/draft"
 )
 
+//go:embed templates/build.Dockerfile
+var buildDockerfileTemplate string
+
+//go:embed templates/run.Dockerfile
+var runDockerfileTemplate string
+
+type BuildDockerfileProps struct {
+	NODEJS_VERSION, CNB_USER_ID, CNB_GROUP_ID int
+	CNB_STACK_ID, PACKAGES                    string
+}
+
+type RunDockerfileProps struct {
+	Registry       string
+	NODEJS_VERSION int
+}
+
+// from nodejs-engine buildpack, keep in sync
+var priorities = []interface{}{
+	"BP_NODE_VERSION",
+	"package.json",
+	".nvmrc",
+	".node-version",
+}
+
+var defaultNodejsVersion = 18
+
 func Generate(config OptionConfig) {
 
 	// Extract the version of Node.js to install, default is 18
 	// This logic will vary based on what is supported by the ubi image
-	NODEJS_VERSION := 18
+	NODEJS_VERSION := defaultNodejsVersion
 	entryResolver := draft.NewPlanner()
 
 	var plan packit.BuildpackPlan
 	planPath := os.Getenv("CNB_BP_PLAN_PATH")
 	var _, err = toml.DecodeFile(planPath, &plan)
 
-	// from nodejs-engine buildpack, keep in sync
-	priorities := []interface{}{
-		"BP_NODE_VERSION",
-		"package.json",
-		".nvmrc",
-		".node-version",
-	}
-
 	entry, _ := entryResolver.Resolve("node", plan.Entries, priorities)
 	if entry.Name == "" {
 		config.ExitHandler.Error(Fail)
+		return
 	}
 
 	version := entry.Metadata["version"]
@@ -46,6 +67,7 @@ func Generate(config OptionConfig) {
 			// Handle constraint not being parseable.
 			fmt.Println("Could not parse Node.js version")
 			config.ExitHandler.Error(Fail)
+			return
 		}
 
 		// we should make this check as close as possible to what
@@ -61,40 +83,42 @@ func Generate(config OptionConfig) {
 		} else {
 			fmt.Println("Unsupported Node.js version")
 			config.ExitHandler.Error(Fail)
+			return
 		}
 	}
 	fmt.Println("VERSION:", NODEJS_VERSION)
 
 	// Below variables has to be fetch from the env
-	// CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
+	CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
 	CNB_STACK_ID := os.Getenv("CNB_STACK_ID")
 
 	// INPUT ARGUMENTS
-	fmt.Println("--->", os.Args)
 	outputDir := config.Args[1]
 
 	//  Patched by build.sh with correct values
 	CNB_USER_ID := 1000
 	CNB_GROUP_ID := 1000
 
-	// fmt.Println("GO****************************")
+	fmt.Println("****************************")
 
-	// fmt.Println("===>Args", config.Args, "<====", "===>", os.Args, "<==")
-	// fmt.Println("ouput_dir", outputDir)
-	// fmt.Println("plan_path", planPath)
-	// fmt.Println("thats the plan:", plan)
+	fmt.Println("extension build env vars!!")
+	fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
+	fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
+	fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
+	fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
 
-	// fmt.Println("extension build env vars!!")
-	// // fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
-	// fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
-	// fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
-	// fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
-	// fmt.Println("****************************")
-	// fmt.Println("extension plan...")
-	// readFileAndPrintToStdout(planPath)
-	// fmt.Println("****************************")
+	fmt.Println("****************************")
 
-	// return
+	fmt.Println("extension plan...")
+
+	err = readFileAndPrintToStdout(planPath)
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+		return
+	}
+
+	fmt.Println("****************************")
+
 	//  TODO .. read engines from $3 to select
 	//          appropriate rpm
 	//          for PoC purposes a single nodejs version will do.
@@ -102,66 +126,90 @@ func Generate(config OptionConfig) {
 	//  Search for any tools on parsing the .toml files.
 	//  Check how to use a binary file generated from go
 
-	PACKAGES := "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which"
+	/* Creating build.Dockerfile*/
 
-	buildDockerfileContent := fmt.Sprintf(`ARG base_image 
-FROM ${base_image}
+	buildDockerfileContent := bytes.Buffer{}
 
-USER root
-ARG build_id=0
-RUN echo ${build_id}
-	
-RUN microdnf -y module enable nodejs:%d`, NODEJS_VERSION)
-	buildDockerfileContent += fmt.Sprintf("\n")
-
-	buildDockerfileContent += fmt.Sprintf(`RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y %s && microdnf clean all`, PACKAGES)
-	buildDockerfileContent += fmt.Sprintf("\n\n")
-
-	buildDockerfileContent += fmt.Sprintf(`RUN echo uid:gid "%d:%d"`, CNB_USER_ID, CNB_GROUP_ID)
-	buildDockerfileContent += fmt.Sprintf("\n")
-
-	buildDockerfileContent += fmt.Sprintf(`USER %d:%d`, CNB_USER_ID, CNB_GROUP_ID)
-	buildDockerfileContent += fmt.Sprintf("\n\n")
-
-	buildDockerfileContent += fmt.Sprintf(`RUN echo "CNB_STACK_ID: %s"`, CNB_STACK_ID)
-	buildDockerfileContent += fmt.Sprintf("\n")
-
-	writeContentToFile(buildDockerfileContent, outputDir+"/build.Dockerfile")
-
-	// default is 18
-	runDockerfileContent := "FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
-	if NODEJS_VERSION == 16 {
-		runDockerfileContent = "FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
+	builDockerfileProps := BuildDockerfileProps{
+		NODEJS_VERSION: NODEJS_VERSION,
+		CNB_USER_ID:    CNB_USER_ID,
+		CNB_GROUP_ID:   CNB_GROUP_ID,
+		CNB_STACK_ID:   CNB_STACK_ID,
+		PACKAGES:       "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which",
 	}
 
-	err = writeContentToFile(runDockerfileContent, outputDir+"/run.Dockerfile")
+	err = generateDockerfileFromTemplate(&buildDockerfileContent, builDockerfileProps, buildDockerfileTemplate)
+
 	if err != nil {
 		config.ExitHandler.Error(Fail)
+		return
 	}
 
-	// fmt.Println("===>", runDockerfileContent, "<===")
+	writeContentToFile(buildDockerfileContent.String(), outputDir+"/build.Dockerfile")
+
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+		return
+	}
+
+	/* Creating run.Dockerfile */
+
+	runDockerfileContent := bytes.Buffer{}
+
+	runDockerfileProps := RunDockerfileProps{
+		Registry:       "172.17.0.1:5000",
+		NODEJS_VERSION: NODEJS_VERSION,
+	}
+
+	err = generateDockerfileFromTemplate(&runDockerfileContent, runDockerfileProps, runDockerfileTemplate)
+
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+		return
+	}
+
+	err = writeContentToFile(runDockerfileContent.String(), outputDir+"/run.Dockerfile")
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+		return
+	}
 
 	fmt.Println("Output of build and run Dockerfiles complete")
 	cmd := exec.Command("ls", "-al", outputDir)
 	stdout, err := cmd.Output()
 
-	//TODO return something that will exit the whole process
 	if err != nil {
 		config.ExitHandler.Error(Fail)
+		return
 	}
 	fmt.Print(string(stdout))
+
+}
+
+func generateDockerfileFromTemplate(w io.Writer, dockerfileProps interface{}, dockerfileTemplate string) error {
+
+	templ, err := template.New("dockerfile").Parse(dockerfileTemplate)
+
+	if err != nil {
+		return err
+	}
+
+	if err := templ.Execute(w, dockerfileProps); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func writeContentToFile(fileContent string, filepath string) (Error error) {
 
 	f, err := os.Create(filepath)
 
-	//TODO return something that will exit the whole process
 	if err != nil {
 		return err
 	}
 
-	n, err := f.WriteString(fileContent + "\n")
+	n, err := f.WriteString(fileContent)
 	if err != nil {
 		return err
 	}
@@ -171,34 +219,15 @@ func writeContentToFile(fileContent string, filepath string) (Error error) {
 	return nil
 }
 
-func readFileAndPrintToStdout(filepath string) {
+func readFileAndPrintToStdout(filepath string) error {
 
-	f, err := os.Open(filepath)
+	filecontent, err := os.ReadFile(filepath)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	defer f.Close()
+	fmt.Println(string(filecontent))
 
-	reader := bufio.NewReader(f)
-	buf := make([]byte, 16)
-
-	for {
-		n, err := reader.Read(buf)
-
-		if err != nil {
-
-			if err != io.EOF {
-
-				log.Fatal(err)
-			}
-
-			break
-		}
-
-		fmt.Print(string(buf[0:n]))
-	}
-
-	fmt.Println()
+	return nil
 }

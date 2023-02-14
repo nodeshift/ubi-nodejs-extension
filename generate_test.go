@@ -2,6 +2,7 @@ package ubi8nodeenginebuildpackextension_test
 
 import (
 	"bytes"
+	_ "embed"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,6 +17,12 @@ import (
 
 	fakes "github.com/nodeshift/ubi8-node-engine-buildack-extension/fakes"
 )
+
+//go:embed testdata/testdata.build.Dockerfile
+var outputBuildDockerfile string
+
+//go:embed testdata/testdata.run.Dockerfile
+var outputRunDockerfile string
 
 func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
@@ -97,7 +104,19 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 		it("Node specific version of node requested", func() {
 			ubi8nodeenginebuildpackextension.Generate(config)
 			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			// writeContentToFile(buildDockerfileContent, outputDir+"/build.Dockerfile")
+		})
+
+		it("should generate build and run docker files.", func() {
+			ubi8nodeenginebuildpackextension.Generate(config)
+
+			buildDockerfileFilepath := outputDir + "/build.Dockerfile"
+			buildDockerfile, _ := os.ReadFile(buildDockerfileFilepath)
+			Expect(outputBuildDockerfile).To(Equal(string(buildDockerfile)))
+
+			runDockerfileFilepath := outputDir + "/run.Dockerfile"
+			runDockerfile, _ := os.ReadFile(runDockerfileFilepath)
+			Expect(outputRunDockerfile).To(Equal(string(runDockerfile)))
+
 		})
 	}, spec.Sequential())
 
