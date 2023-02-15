@@ -3,11 +3,11 @@ package ubi8nodeenginebuildpackextension
 import (
 	"bytes"
 	_ "embed"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-
 	"text/template"
 
 	"github.com/BurntSushi/toml"
@@ -42,50 +42,91 @@ var priorities = []interface{}{
 
 var defaultNodejsVersion = 18
 
-func Generate(config OptionConfig) {
-
-	// Extract the version of Node.js to install, default is 18
-	// This logic will vary based on what is supported by the ubi image
-	NODEJS_VERSION := defaultNodejsVersion
-	entryResolver := draft.NewPlanner()
-
+func ReadAndDecodeBuildpackPlan(buildpackPlanPath string) (buildpackPlan packit.BuildpackPlan, Error error) {
 	var plan packit.BuildpackPlan
-	planPath := os.Getenv("CNB_BP_PLAN_PATH")
-	var _, err = toml.DecodeFile(planPath, &plan)
+	var _, err = toml.DecodeFile(buildpackPlanPath, &plan)
+
+	if err != nil {
+		return plan, err
+	}
+	return plan, nil
+}
+
+func ResolveNodeVersionByPriorities(plan packit.BuildpackPlan, priorities []interface{}) (version string, Error error) {
+
+	entryResolver := draft.NewPlanner()
 
 	entry, _ := entryResolver.Resolve("node", plan.Entries, priorities)
 	if entry.Name == "" {
+		return "", errors.New("No Node.js version found.")
+	}
+
+	if version, ok := entry.Metadata["version"].(string); ok {
+		return version, nil
+	} else {
+		return "", nil
+	}
+}
+
+func ResolveNodeVersionConstrains(version string, defaultNodejsVersion int) (nodejsVersion int, Error error) {
+	if version == "" {
+		return defaultNodejsVersion, nil
+	}
+
+	constraint, err := semver.NewConstraint(version)
+	if err != nil {
+
+		return 0, errors.New("Could not parse Node.js version")
+	}
+
+	// we should make this check as close as possible to what
+	// is in the dependency resolve which is more forgiving
+	// than this. The versions should also be set by what
+	// the actual version numbers in the build image
+	version18, _ := semver.NewVersion("18")
+
+	if constraint.Check(version18) {
+		return 18, nil
+	}
+
+	version16, _ := semver.NewVersion("16")
+
+	if constraint.Check(version16) {
+		return 16, nil
+	}
+
+	return 0, errors.New("Unsupported Node.js version")
+}
+
+func Generate(config OptionConfig) {
+
+	var planPath = os.Getenv("CNB_BP_PLAN_PATH")
+
+	plan, err := ReadAndDecodeBuildpackPlan(planPath)
+
+	if err != nil {
+		fmt.Println(err)
 		config.ExitHandler.Error(Fail)
 		return
 	}
 
-	version := entry.Metadata["version"]
+	version, err := ResolveNodeVersionByPriorities(plan, priorities)
 
-	if version != nil && version != "" {
-		constraint, err := semver.NewConstraint(version.(string))
-		if err != nil {
-			// Handle constraint not being parseable.
-			fmt.Println("Could not parse Node.js version")
-			config.ExitHandler.Error(Fail)
-			return
-		}
-
-		// we should make this check as close as possible to what
-		// is in the dependency resolve which is more forgiving
-		// than this. The versions should also be set by what
-		// the actual version numbers in the build image
-		version18, _ := semver.NewVersion("18")
-		version16, _ := semver.NewVersion("16")
-		if constraint.Check(version18) {
-			NODEJS_VERSION = 18
-		} else if constraint.Check(version16) {
-			NODEJS_VERSION = 16
-		} else {
-			fmt.Println("Unsupported Node.js version")
-			config.ExitHandler.Error(Fail)
-			return
-		}
+	if err != nil {
+		config.ExitHandler.Error(Fail)
+		return
 	}
+
+	// Extract the version of Node.js to install, default is 18
+	// This logic will vary based on what is supported by the ubi image
+	NODEJS_VERSION, err := ResolveNodeVersionConstrains(version, defaultNodejsVersion)
+
+	if err != nil {
+		fmt.Println(err)
+		config.ExitHandler.Error(Fail)
+		return
+	}
+
 	fmt.Println("VERSION:", NODEJS_VERSION)
 
 	// Below variables has to be fetch from the env
@@ -175,6 +216,7 @@ func Generate(config OptionConfig) {
 	}
 
 	fmt.Println("Output of build and run Dockerfiles complete")
+
 	cmd := exec.Command("ls", "-al", outputDir)
 	stdout, err := cmd.Output()
 
