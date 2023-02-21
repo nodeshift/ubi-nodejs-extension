@@ -11,7 +11,7 @@ import (
 func main() {
 	dependencyManager := postal.NewService(cargo.NewTransport())
 
-	packit.Run(
+	packit.RunExtension(
 		ubi8nodeenginebuildpackextension.Detect(),
 		ubi8nodeenginebuildpackextension.Generate(dependencyManager),
 	)
