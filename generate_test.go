@@ -15,9 +15,15 @@ import (
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/sclevine/spec"
 
+	"github.com/paketo-buildpacks/packit/v2/cargo"
+
 	"github.com/BurntSushi/toml"
 	postal "github.com/paketo-buildpacks/packit/v2/postal"
 )
+
+type extensionTomlProps struct {
+	NODEJS_VERSION string
+}
 
 func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
@@ -43,7 +49,6 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			fmt.Print(err)
 
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), buf.Bytes(), 0600)).To(Succeed())
-			// planPath = filepath.Join(workingDir, "plan")
 
 			os.Chdir(workingDir)
 		})
@@ -60,7 +65,6 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			})
 			Expect(err).To(HaveOccurred())
 			Expect(generateResult.BuildDockerfile).To(BeNil())
-			// writeContentToFile(buildDockerfileContent, outputDir+"/build.Dockerfile")
 		})
 	}, spec.Sequential())
 
@@ -102,6 +106,70 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			_, _ = io.Copy(buf, generateResult.RunDockerfile)
 			Expect(buf.String()).To(Equal("FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"))
 		})
+
+		it("Node specific version of node requested", func() {
+
+			extensionToml, _ := readExtensionTomlTemplateFile()
+
+			cnbDir, err = os.MkdirTemp("", "cnb")
+			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+
+			dependencyManager := postal.NewService(cargo.NewTransport())
+
+			generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+				WorkingDir: workingDir,
+				CNBPath:    cnbDir,
+				Plan: packit.BuildpackPlan{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name: "node",
+							Metadata: map[string]interface{}{
+								"version":        "16",
+								"version-source": "BP_NODE_VERSION",
+							},
+						},
+					},
+				},
+				Stack: "ubi8-paketo",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(generateResult).NotTo(Equal(nil))
+
+			buf := new(strings.Builder)
+			_, _ = io.Copy(buf, generateResult.RunDockerfile)
+			Expect(buf.String()).To(Equal("FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"))
+
+		})
+
 	}, spec.Sequential())
 
+}
+
+func readExtensionTomlTemplateFile() (string, error) {
+	return `api = "0.7"
+
+	[extension]
+	id = "redhat-runtimes/nodejs"
+	name = "RedHat Runtimes Node.js Dependency Extension"
+	version = "0.0.1"
+	description = "This extension installs the appropriate nodejs runtime via dnf"
+	
+	[metadata]
+	  [metadata.default-versions]
+		node = "18.*.*"
+	
+	  [[metadata.dependencies]]
+		id = "node"
+		name = "Ubi Node Extension"
+		stacks = ["ubi8-paketo"]
+		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
+		version = "18"
+
+	  [[metadata.dependencies]]
+		id = "node"
+		name = "Ubi Node Extension"
+		stacks = ["ubi8-paketo"]
+		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
+		version = "16"
+		`, nil
 }

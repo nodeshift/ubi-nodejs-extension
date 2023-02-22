@@ -1,9 +1,12 @@
 package ubi8nodeenginebuildpackextension
 
 import (
+	"bytes"
+	_ "embed"
 	"fmt"
 	"os"
 	"strings"
+	"text/template"
 
 	//"github.com/Masterminds/semver/v3"
 	"path/filepath"
@@ -12,6 +15,21 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/draft"
 	postal "github.com/paketo-buildpacks/packit/v2/postal"
 )
+
+//go:embed templates/build.Dockerfile
+var buildDockerfileTemplate string
+
+type BuildDockerfileProps struct {
+	NODEJS_VERSION, CNB_USER_ID, CNB_GROUP_ID int
+	CNB_STACK_ID, PACKAGES                    string
+}
+
+//go:embed templates/run.Dockerfile
+var runDockerfileTemplate string
+
+type RunDockerfileProps struct {
+	Source string
+}
 
 //go:generate faux --interface DependencyManager --output fakes/dependency_manager.go
 type DependencyManager interface {
@@ -48,30 +66,6 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 			return packit.GenerateResult{}, err
 		}
 
-		/*
-			version := entry.Metadata["version"]
-
-			if version != nil && version != "" {
-				constraint, err := semver.NewConstraint(version.(string))
-				if err != nil {
-					// Handle constraint not being parseable.
-					return packit.GenerateResult{}, packit.Fail.WithMessage("Could not parse Node.js version")
-				}
-
-				// we should make this check as close as possible to what
-				// is in the dependency resolve which is more forgiving
-				// than this. The versions should also be set by what
-				// the actual version numbers in the build image
-				version18, _ := semver.NewVersion("18")
-				version16, _ := semver.NewVersion("16")
-				if constraint.Check(version18) {
-					NODEJS_VERSION = 18
-				} else if constraint.Check(version16) {
-					NODEJS_VERSION = 16
-				} else {
-					return packit.GenerateResult{}, packit.Fail.WithMessage("Unsupported Node.js version")
-				}
-			}*/
 		fmt.Println("VERSION:", NODEJS_VERSION)
 
 		// Below variables has to be fetch from the env
@@ -82,37 +76,43 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		CNB_USER_ID := 1000
 		CNB_GROUP_ID := 1000
 
-		PACKAGES := "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which"
+		fmt.Println("****************************")
 
-		buildDockerfileContent := fmt.Sprintf(`ARG base_image 
-	FROM ${base_image}
+		fmt.Println("extension build env vars!!")
+		// fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
+		fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
+		fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
+		fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
 
-	USER root
-	ARG build_id=0
-	RUN echo ${build_id}
-		
-	RUN microdnf -y module enable nodejs:%d`, NODEJS_VERSION)
-		buildDockerfileContent += fmt.Sprintf("\n")
+		fmt.Println("****************************")
 
-		buildDockerfileContent += fmt.Sprintf(`RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y %s && microdnf clean all`, PACKAGES)
-		buildDockerfileContent += fmt.Sprintf("\n\n")
+		fmt.Println("extension plan...")
 
-		buildDockerfileContent += fmt.Sprintf(`RUN echo uid:gid "%d:%d"`, CNB_USER_ID, CNB_GROUP_ID)
-		buildDockerfileContent += fmt.Sprintf("\n")
+		/* Creating build.Dockerfile*/
 
-		buildDockerfileContent += fmt.Sprintf(`USER %d:%d`, CNB_USER_ID, CNB_GROUP_ID)
-		buildDockerfileContent += fmt.Sprintf("\n\n")
+		builDockerfileProps := BuildDockerfileProps{
+			NODEJS_VERSION: NODEJS_VERSION,
+			CNB_USER_ID:    CNB_USER_ID,
+			CNB_GROUP_ID:   CNB_GROUP_ID,
+			CNB_STACK_ID:   CNB_STACK_ID,
+			PACKAGES:       "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which",
+		}
 
-		buildDockerfileContent += fmt.Sprintf(`RUN echo "CNB_STACK_ID: %s"`, CNB_STACK_ID)
-		buildDockerfileContent += fmt.Sprintf("\n")
+		buildDockerfileContent, err := FillPropsToTemplate(builDockerfileProps, buildDockerfileTemplate)
 
-		/*		// default is 18
-					runDockerfileContent := "FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
-					if NODEJS_VERSION == 16 {
-						runDockerfileContent = "FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
-				}
-		*/
-		runDockerfileContent := "FROM " + dependency.Source
+		if err != nil {
+			return packit.GenerateResult{}, err
+		}
+
+		RunDockerfileProps := RunDockerfileProps{
+			Source: dependency.Source,
+		}
+
+		runDockerfileContent, err := FillPropsToTemplate(RunDockerfileProps, runDockerfileTemplate)
+
+		if err != nil {
+			return packit.GenerateResult{}, err
+		}
 
 		return packit.GenerateResult{
 			ExtendConfig:    packit.ExtendConfig{Build: packit.ExtendImageConfig{[]packit.ExtendImageConfigArg{}}},
@@ -120,4 +120,20 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 			RunDockerfile:   strings.NewReader(runDockerfileContent),
 		}, nil
 	}
+}
+
+func FillPropsToTemplate(properties interface{}, templateString string) (result string, Error error) {
+
+	templ, err := template.New("template").Parse(templateString)
+	if err != nil {
+		return "", err
+	}
+
+	var buf bytes.Buffer
+	err = templ.Execute(&buf, properties)
+	if err != nil {
+		panic(err)
+	}
+
+	return buf.String(), nil
 }

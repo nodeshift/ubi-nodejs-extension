@@ -4,7 +4,6 @@ go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
-	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/onsi/gomega v1.27.1
 	github.com/paketo-buildpacks/node-start v1.0.0
 	github.com/paketo-buildpacks/npm-start v1.0.1
@@ -13,6 +12,7 @@ require (
 )
 
 require (
+	github.com/Masterminds/semver/v3 v3.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/paketo-buildpacks/libreload-packit v0.0.1 // indirect
