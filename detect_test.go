@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	ubi8nodeenginebuildpackextension "github.com/nodeshift/ubi8-node-engine-buildack-extension"
-	fakes "github.com/nodeshift/ubi8-node-engine-buildack-extension/fakes"
 
 	//	"github.com/paketo-buildpacks/packit/v2"
 	"os"
@@ -45,31 +44,34 @@ func readPlan(planPath string) packit.BuildPlan {
 func testDetect(t *testing.T, context spec.G, it spec.S) {
 
 	var (
-		Expect      = NewWithT(t).Expect
-		exitHandler fakes.ExitHandlerInterface
-		config      ubi8nodeenginebuildpackextension.OptionConfig
-		workingDir  string
-		planPath    string
+		Expect        = NewWithT(t).Expect
+		workingDir    string
+		detectContext packit.DetectContext
+		err           error
+		detectResult  packit.DetectResult
 	)
 
 	context("when no application is detected", func() {
 		it.Before(func() {
 			workingDir = t.TempDir()
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("indicates it does not participate", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err.Error()).To(Equal("failed"))
-			Expect(readPlan(planPath)).To(Equal(expectedNotDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).To(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedNotDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -78,20 +80,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			workingDir = t.TempDir()
 			Expect(os.WriteFile(filepath.Join(workingDir, "server.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -102,20 +101,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.MkdirAll(filepath.Join(workingDir, "src"), os.ModePerm)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "server.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -125,20 +121,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			t.Setenv("BP_LAUNCHPOINT", "not_a_known_name.js")
 			Expect(os.WriteFile(filepath.Join(workingDir, "not_a_known_name.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -150,20 +143,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.MkdirAll(filepath.Join(workingDir, "src"), os.ModePerm)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "not_a_known_name.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -178,20 +168,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).To(BeNil())
 			Expect(os.WriteFile(filepath.Join(workingDir, "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("indicates it does not participate", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err.Error()).To(Equal("failed"))
-			Expect(readPlan(planPath)).To(Equal(expectedNotDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).To(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedNotDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -205,20 +192,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(err).To(BeNil())
 			Expect(os.WriteFile(filepath.Join(workingDir, "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -234,20 +218,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.MkdirAll(filepath.Join(workingDir, "src"), os.ModePerm)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
@@ -263,20 +244,17 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "server.js"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
-			planPath = filepath.Join(workingDir, "plan")
 
-			exitHandler = fakes.ExitHandlerInterface{}
-			config = ubi8nodeenginebuildpackextension.OptionConfig{
-				ExitHandler: &exitHandler,
-				Args:        []string{"exe", "arg1", planPath},
-			}
 			os.Chdir(workingDir)
+			detectContext = packit.DetectContext{
+				WorkingDir: workingDir,
+			}
 		})
 
 		it("detects", func() {
-			ubi8nodeenginebuildpackextension.Detect(config)
-			Expect(exitHandler.ErrorCall.Receives.Err).To(BeNil())
-			Expect(readPlan(planPath)).To(Equal(expectedDetectBuildPlan))
+			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
 	}, spec.Sequential())
 
