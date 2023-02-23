@@ -5,9 +5,10 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
-	"path/filepath"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/draft"
@@ -23,7 +24,6 @@ type BuildDockerfileProps struct {
 	CNB_STACK_ID, PACKAGES    string
 }
 
-
 //go:embed templates/run.Dockerfile
 var runDockerfileTemplate string
 
@@ -37,7 +37,6 @@ type DependencyManager interface {
 	Deliver(dependency postal.Dependency, cnbPath, layerPath, platformPath string) error
 	GenerateBillOfMaterials(dependencies ...postal.Dependency) []packit.BOMEntry
 }
-
 
 func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 	return func(context packit.GenerateContext) (packit.GenerateResult, error) {
@@ -67,7 +66,6 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 
 		sVersion, err := semver.NewVersion(dependency.Version)
 
-
 		NODEJS_VERSION := sVersion.Major()
 		fmt.Println("NODEJS MAJOR VERSION:", NODEJS_VERSION)
 
@@ -88,7 +86,6 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
 
 		fmt.Println("****************************")
-
 
 		fmt.Println("extension plan...")
 

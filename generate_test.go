@@ -140,7 +140,6 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			_, _ = io.Copy(buf, generateResult.RunDockerfile)
 			Expect(buf.String()).To(Equal("FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"))
 
-
 		})
 
 	}, spec.Sequential())
