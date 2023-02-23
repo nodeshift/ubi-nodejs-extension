@@ -8,8 +8,9 @@ import (
 	"strings"
 	"text/template"
 
-	//"github.com/Masterminds/semver/v3"
 	"path/filepath"
+
+	"github.com/Masterminds/semver/v3"
 
 	"github.com/paketo-buildpacks/packit/v2"
 	"github.com/paketo-buildpacks/packit/v2/draft"
@@ -20,8 +21,9 @@ import (
 var buildDockerfileTemplate string
 
 type BuildDockerfileProps struct {
-	NODEJS_VERSION, CNB_USER_ID, CNB_GROUP_ID int
-	CNB_STACK_ID, PACKAGES                    string
+	NODEJS_VERSION            uint64
+	CNB_USER_ID, CNB_GROUP_ID int
+	CNB_STACK_ID, PACKAGES    string
 }
 
 //go:embed templates/run.Dockerfile
@@ -44,9 +46,6 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		// likely move this out to main
 		entryResolver := draft.NewPlanner()
 
-		// Default version of Node.js to install
-		NODEJS_VERSION := 18
-
 		// from nodejs-engine buildpack, keep in sync
 		priorities := []interface{}{
 			"BP_NODE_VERSION",
@@ -61,12 +60,16 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		}
 
 		version, _ := entry.Metadata["version"].(string)
-		dependency, err := dependencyManager.Resolve(filepath.Join(context.CNBPath, "extension.toml"), entry.Name, version, context.Stack)
+		extensionFilePath := filepath.Join(context.CNBPath, "extension.toml")
+		dependency, err := dependencyManager.Resolve(extensionFilePath, entry.Name, version, context.Stack)
 		if err != nil {
 			return packit.GenerateResult{}, err
 		}
 
-		fmt.Println("VERSION:", NODEJS_VERSION)
+		sVersion, err := semver.NewVersion(dependency.Version)
+
+		NODEJS_VERSION := sVersion.Major()
+		fmt.Println("NODEJS MAJOR VERSION:", NODEJS_VERSION)
 
 		// Below variables has to be fetch from the env
 		// CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
@@ -103,6 +106,8 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		if err != nil {
 			return packit.GenerateResult{}, err
 		}
+
+		/* Creating run.Dockerfile*/
 
 		RunDockerfileProps := RunDockerfileProps{
 			Source: dependency.Source,

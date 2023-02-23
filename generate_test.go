@@ -163,13 +163,13 @@ func readExtensionTomlTemplateFile() (string, error) {
 		name = "Ubi Node Extension"
 		stacks = ["ubi8-paketo"]
 		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
-		version = "18"
+		version = "18.1000"
 
 	  [[metadata.dependencies]]
 		id = "node"
 		name = "Ubi Node Extension"
 		stacks = ["ubi8-paketo"]
 		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
-		version = "16"
+		version = "16.1000"
 		`, nil
 }
