@@ -42,7 +42,7 @@ type extensionTomlProps struct {
 	NODEJS_VERSION string
 }
 
-func testFillProps(t *testing.T, context spec.G, it spec.S) {
+func testFillPropsToTemplate(t *testing.T, context spec.G, it spec.S) {
 
 	var (
 		Expect = NewWithT(t).Expect
@@ -155,30 +155,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			os.Chdir(workingDir)
 		})
 
-		it("Node specific version of node requested", func() {
-			dependencyManager = &fakes.DependencyManager{}
-			dependencyManager.ResolveCall.Returns.Dependency =
-				postal.Dependency{Name: "Node Engine", ID: "node", Version: "16.5.1", Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"}
-			generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
-				WorkingDir: workingDir,
-				CNBPath:    cnbDir,
-				Plan: packit.BuildpackPlan{
-					Entries: []packit.BuildpackPlanEntry{
-						{
-							Name: "node",
-						},
-					},
-				},
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(generateResult).NotTo(Equal(nil))
-
-			buf := new(strings.Builder)
-			_, _ = io.Copy(buf, generateResult.RunDockerfile)
-			Expect(buf.String()).To(Equal("FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"))
-		})
-
-		it("Node specific version of node requested", func() {
+		it("Specific version of node requested", func() {
 
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
@@ -187,28 +164,276 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
-			generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
-				WorkingDir: workingDir,
-				CNBPath:    cnbDir,
-				Plan: packit.BuildpackPlan{
-					Entries: []packit.BuildpackPlanEntry{
-						{
-							Name: "node",
-							Metadata: map[string]interface{}{
-								"version":        "16",
-								"version-source": "BP_NODE_VERSION",
+			verstionTests := []struct {
+				Name               string
+				Metadata           map[string]interface{}
+				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+			}{
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "16 - 18",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "16.0.0 - 18.0.0",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        ">16",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        ">13",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "<18.5.1",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        ">18.5.1",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "16 <18.5.1",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "<1.0.0 || >=2.5.2 <3.0.0 || >=2.3.1 <18.4.5",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "v18",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "16",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "18",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "x",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "~16",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "^18.0.x",
+						"version-source": "BP_NODE_VERSION",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+					},
+				},
+			}
+
+			for _, tt := range verstionTests {
+
+				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+					WorkingDir: workingDir,
+					CNBPath:    cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{
+								Name:     tt.Name,
+								Metadata: tt.Metadata,
 							},
 						},
 					},
-				},
-				Stack: "ubi8-paketo",
-			})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(generateResult).NotTo(Equal(nil))
+					Stack: "ubi8-paketo",
+				})
 
-			buf := new(strings.Builder)
-			_, _ = io.Copy(buf, generateResult.RunDockerfile)
-			Expect(buf.String()).To(Equal("FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-16"))
+				Expect(err).NotTo(HaveOccurred())
+				Expect(generateResult).NotTo(Equal(nil))
+
+				buf := new(strings.Builder)
+				_, _ = io.Copy(buf, generateResult.RunDockerfile)
+
+				runDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.RunDockerfileProps, runDockerfileTemplate)
+
+				Expect(buf.String()).To(Equal(runDockerfileContent))
+			}
+
+		})
+
+		it("Should error on below cases of requested node", func() {
+
+			extensionToml, _ := readExtensionTomlTemplateFile()
+
+			cnbDir, err = os.MkdirTemp("", "cnb")
+			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+
+			dependencyManager := postal.NewService(cargo.NewTransport())
+
+			verstionTests := []struct {
+				Name               string
+				Metadata           map[string]interface{}
+				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+			}{
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "17 - 18.0.0",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "15",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "18.0.0",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "v18.999.0",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        ">18",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "~16.2",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "16.5.x",
+						"version-source": "BP_NODE_VERSION",
+					},
+				},
+			}
+
+			for _, tt := range verstionTests {
+
+				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+					WorkingDir: workingDir,
+					CNBPath:    cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{
+								Name:     tt.Name,
+								Metadata: tt.Metadata,
+							},
+						},
+					},
+					Stack: "ubi8-paketo",
+				})
+
+				Expect(err).To(HaveOccurred())
+
+			}
 
 		})
 
@@ -217,6 +442,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 }
 
 func readExtensionTomlTemplateFile() (string, error) {
+
 	return `api = "0.7"
 
 	[extension]

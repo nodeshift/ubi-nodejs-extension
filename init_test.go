@@ -11,5 +11,6 @@ func TestUnitNode(t *testing.T) {
 	suite := spec.New("node", spec.Report(report.Terminal{}))
 	suite("Detect", testDetect)
 	suite("Generate", testGenerate)
+	suite("Dockerfile Creation", testFillPropsToTemplate)
 	suite.Run(t)
 }
