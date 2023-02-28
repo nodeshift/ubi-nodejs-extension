@@ -22,8 +22,78 @@ import (
 	postal "github.com/paketo-buildpacks/packit/v2/postal"
 )
 
+type RunDockerfileProps struct {
+	Source string
+}
+
+//go:embed templates/run.Dockerfile
+var runDockerfileTemplate string
+
+type BuildDockerfileProps struct {
+	NODEJS_VERSION            uint64
+	CNB_USER_ID, CNB_GROUP_ID int
+	CNB_STACK_ID, PACKAGES    string
+}
+
+//go:embed templates/build.Dockerfile
+var buildDockerfileTemplate string
+
 type extensionTomlProps struct {
 	NODEJS_VERSION string
+}
+
+func testFillProps(t *testing.T, context spec.G, it spec.S) {
+
+	var (
+		Expect = NewWithT(t).Expect
+	)
+
+	context("Adding props on templates with FillPropsToTemplate", func() {
+
+		it("Should fill with properties the template/build.Dockerfile", func() {
+
+			buildDockerfileProps := BuildDockerfileProps{
+				NODEJS_VERSION: 16,
+				CNB_USER_ID:    1000,
+				CNB_GROUP_ID:   1000,
+				CNB_STACK_ID:   "",
+				PACKAGES:       "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which",
+			}
+
+			output, err := ubi8nodeenginebuildpackextension.FillPropsToTemplate(buildDockerfileProps, buildDockerfileTemplate)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal(`ARG base_image
+FROM ${base_image}
+
+USER root
+
+ARG build_id=0
+RUN echo ${build_id}
+
+RUN microdnf -y module enable nodejs:16
+RUN microdnf --setopt=install_weak_deps=0 --setopt=tsflags=nodocs install -y make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which && microdnf clean all
+
+RUN echo uid:gid "1000:1000"
+USER 1000:1000
+
+RUN echo "CNB_STACK_ID: "`))
+
+		})
+
+		it("Should fill with properties the template/run.Dockerfile", func() {
+
+			RunDockerfileProps := RunDockerfileProps{
+				Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+			}
+
+			output, err := ubi8nodeenginebuildpackextension.FillPropsToTemplate(RunDockerfileProps, runDockerfileTemplate)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(output).To(Equal(`FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-18`))
+
+		})
+	})
 }
 
 func testGenerate(t *testing.T, context spec.G, it spec.S) {

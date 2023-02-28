@@ -91,7 +91,7 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 
 		/* Creating build.Dockerfile*/
 
-		builDockerfileProps := BuildDockerfileProps{
+		buildDockerfileProps := BuildDockerfileProps{
 			NODEJS_VERSION: NODEJS_VERSION,
 			CNB_USER_ID:    CNB_USER_ID,
 			CNB_GROUP_ID:   CNB_GROUP_ID,
@@ -99,7 +99,7 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 			PACKAGES:       "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which",
 		}
 
-		buildDockerfileContent, err := FillPropsToTemplate(builDockerfileProps, buildDockerfileTemplate)
+		buildDockerfileContent, err := FillPropsToTemplate(buildDockerfileProps, buildDockerfileTemplate)
 
 		if err != nil {
 			return packit.GenerateResult{}, err
