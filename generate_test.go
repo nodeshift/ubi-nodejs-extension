@@ -3,7 +3,6 @@ package ubi8nodeenginebuildpackextension_test
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -116,8 +115,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			workingDir = t.TempDir()
 			Expect(err).NotTo(HaveOccurred())
 
-			err := toml.NewEncoder(buf).Encode(testBuildPlan)
-			fmt.Print(err)
+			toml.NewEncoder(buf).Encode(testBuildPlan)
 
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), buf.Bytes(), 0600)).To(Succeed())
 
@@ -145,8 +143,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			workingDir = t.TempDir()
 			cnbDir, err = os.MkdirTemp("", "cnb")
 
-			err := toml.NewEncoder(buf).Encode(testBuildPlan)
-			fmt.Print(err)
+			toml.NewEncoder(buf).Encode(testBuildPlan)
+
 			planPath = filepath.Join(workingDir, "plan")
 			t.Setenv("CNB_BP_PLAN_PATH", planPath)
 
@@ -164,10 +162,19 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
-			verstionTests := []struct {
-				Name               string
-				Metadata           map[string]interface{}
-				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+			BuildDockerfileProps := ubi8nodeenginebuildpackextension.BuildDockerfileProps{
+				CNB_USER_ID:  ubi8nodeenginebuildpackextension.CNB_USER_ID,
+				CNB_GROUP_ID: ubi8nodeenginebuildpackextension.CNB_GROUP_ID,
+				CNB_STACK_ID: "",
+				PACKAGES:     ubi8nodeenginebuildpackextension.PACKAGES,
+			}
+
+			versionTests := []struct {
+				Name                                 string
+				Metadata                             map[string]interface{}
+				RunDockerfileProps                   ubi8nodeenginebuildpackextension.RunDockerfileProps
+				BuildDockerfileProps                 ubi8nodeenginebuildpackextension.BuildDockerfileProps
+				buildDockerfileExpectedNodejsVersion int
 			}{
 				{
 					Name: "node",
@@ -178,6 +185,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -188,6 +197,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -198,6 +209,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -208,6 +221,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -218,6 +233,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -228,6 +245,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -238,6 +257,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -248,6 +269,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -258,6 +281,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -268,6 +293,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -278,6 +305,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -288,6 +317,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -298,6 +329,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 				{
 					Name: "node",
@@ -308,6 +341,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 16,
 				},
 				{
 					Name: "node",
@@ -318,10 +353,12 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
 						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
 					},
+					BuildDockerfileProps:                 BuildDockerfileProps,
+					buildDockerfileExpectedNodejsVersion: 18,
 				},
 			}
 
-			for _, tt := range verstionTests {
+			for _, tt := range versionTests {
 
 				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
 					WorkingDir: workingDir,
@@ -340,12 +377,16 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(generateResult).NotTo(Equal(nil))
 
+				runDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.RunDockerfileProps, runDockerfileTemplate)
+				tt.BuildDockerfileProps.NODEJS_VERSION = uint64(tt.buildDockerfileExpectedNodejsVersion)
+				buildDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.BuildDockerfileProps, buildDockerfileTemplate)
+
 				buf := new(strings.Builder)
 				_, _ = io.Copy(buf, generateResult.RunDockerfile)
-
-				runDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.RunDockerfileProps, runDockerfileTemplate)
-
 				Expect(buf.String()).To(Equal(runDockerfileContent))
+				buf.Reset()
+				_, _ = io.Copy(buf, generateResult.BuildDockerfile)
+				Expect(buf.String()).To(Equal(buildDockerfileContent))
 			}
 
 		})
@@ -359,7 +400,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
-			verstionTests := []struct {
+			versionTests := []struct {
 				Name               string
 				Metadata           map[string]interface{}
 				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
@@ -415,7 +456,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 				},
 			}
 
-			for _, tt := range verstionTests {
+			for _, tt := range versionTests {
 
 				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
 					WorkingDir: workingDir,
