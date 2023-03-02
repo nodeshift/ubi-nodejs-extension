@@ -3,7 +3,6 @@ package ubi8nodeenginebuildpackextension
 import (
 	"bytes"
 	_ "embed"
-	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +13,12 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/draft"
 	postal "github.com/paketo-buildpacks/packit/v2/postal"
 )
+
+var PACKAGES = "make gcc gcc-c++ libatomic_ops git openssl-devel nodejs npm nodejs-nodemon nss_wrapper which"
+
+// Should be externalized
+var CNB_USER_ID = 1000
+var CNB_GROUP_ID = 1000
 
 //go:embed templates/build.Dockerfile
 var buildDockerfileTemplate string
@@ -67,27 +72,10 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		sVersion, err := semver.NewVersion(dependency.Version)
 
 		NODEJS_VERSION := sVersion.Major()
-		fmt.Println("NODEJS MAJOR VERSION:", NODEJS_VERSION)
 
 		// Below variables has to be fetch from the env
 		// CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
 		CNB_STACK_ID := os.Getenv("CNB_STACK_ID")
-
-		//  Should be externalized
-		CNB_USER_ID := 1000
-		CNB_GROUP_ID := 1000
-
-		fmt.Println("****************************")
-
-		fmt.Println("extension build env vars!!")
-		// fmt.Println("CNB_PLATFORM_API:", CNB_PLATFORM_API)
-		fmt.Println("CNB_STACK_ID: ", CNB_STACK_ID)
-		fmt.Println("CNB_USER_ID: ", CNB_USER_ID)
-		fmt.Println("CNB_GROUP_ID: ", CNB_GROUP_ID)
-
-		fmt.Println("****************************")
-
-		fmt.Println("extension plan...")
 
 		/* Creating build.Dockerfile*/
 
