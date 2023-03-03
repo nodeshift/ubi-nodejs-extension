@@ -70,7 +70,7 @@ func Detect() packit.DetectFunc {
 			}
 		}
 
-		// if we get here we either found a packge.json or Node.js application file
+		// if we get here we either found a pacakge.json or Node.js application file
 		return packit.DetectResult{
 			Plan: packit.BuildPlan{
 				Provides: []packit.BuildPlanProvision{
