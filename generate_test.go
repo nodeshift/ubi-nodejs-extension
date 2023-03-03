@@ -401,9 +401,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
 			versionTests := []struct {
-				Name               string
-				Metadata           map[string]interface{}
-				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+				Name     string
+				Metadata map[string]interface{}
 			}{
 				{
 					Name: "node",
@@ -473,11 +472,152 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 				})
 
 				Expect(err).To(HaveOccurred())
+			}
+		})
 
+	}, spec.Sequential())
+
+	context("Getting from detect phase the Node.js versions combined with the source", func() {
+
+		it.Before(func() {
+
+			workingDir = t.TempDir()
+			cnbDir, err = os.MkdirTemp("", "cnb")
+
+			toml.NewEncoder(buf).Encode(testBuildPlan)
+
+			planPath = filepath.Join(workingDir, "plan")
+			t.Setenv("CNB_BP_PLAN_PATH", planPath)
+
+			Expect(os.WriteFile(planPath, buf.Bytes(), 0600)).To(Succeed())
+
+			os.Chdir(workingDir)
+		})
+
+		it("Should respect the priorities and return the proper Node.js version", func() {
+
+			extensionToml, _ := readExtensionTomlTemplateFile()
+
+			cnbDir, err = os.MkdirTemp("", "cnb")
+			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+
+			dependencyManager := postal.NewService(cargo.NewTransport())
+
+			entriesTests := []struct {
+				Entries            []packit.BuildpackPlanEntry
+				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+			}{
+				{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "<0", "version-source": ".node-version"},
+						},
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "<0", "version-source": ".nvmrc"},
+						},
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "<0", "version-source": "package.json"},
+						},
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "=16", "version-source": "BP_NODE_VERSION"},
+						},
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "<0", "version-source": ".node-version"},
+						},
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "<0", "version-source": ".nvmrc"},
+						},
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "=16", "version-source": "package.json"},
+						},
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+				{
+					Entries: []packit.BuildpackPlanEntry{
+						{
+							Name:     "node",
+							Metadata: map[string]interface{}{"version": "=16", "version-source": ".node-version"},
+						},
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+			}
+
+			for _, tt := range entriesTests {
+
+				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+					WorkingDir: workingDir,
+					CNBPath:    cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: tt.Entries,
+					},
+					Stack: "ubi8-paketo",
+				})
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(generateResult).NotTo(Equal(nil))
+
+				runDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.RunDockerfileProps, runDockerfileTemplate)
+
+				buf := new(strings.Builder)
+				_, _ = io.Copy(buf, generateResult.RunDockerfile)
+				Expect(buf.String()).To(Equal(runDockerfileContent))
 			}
 
 		})
 
+		it("Should error in case there are no entries in the buildpack plan.", func() {
+
+			extensionToml, _ := readExtensionTomlTemplateFile()
+
+			cnbDir, err = os.MkdirTemp("", "cnb")
+			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+
+			dependencyManager := postal.NewService(cargo.NewTransport())
+
+			entriesTests := []struct {
+				Entries []packit.BuildpackPlanEntry
+			}{
+				{
+					Entries: []packit.BuildpackPlanEntry{},
+				},
+			}
+
+			for _, tt := range entriesTests {
+
+				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+					WorkingDir: workingDir,
+					CNBPath:    cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: tt.Entries,
+					},
+					Stack: "ubi8-paketo",
+				})
+
+				Expect(err).To(HaveOccurred())
+
+			}
+
+		})
 	}, spec.Sequential())
 
 }

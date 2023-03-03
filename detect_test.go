@@ -60,12 +60,6 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
-			detectContext = packit.DetectContext{
-				WorkingDir: workingDir,
-			}
-			detectContext = packit.DetectContext{
-				WorkingDir: workingDir,
-			}
 		})
 
 		it("indicates it does not participate", func() {
