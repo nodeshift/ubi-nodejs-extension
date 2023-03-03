@@ -3,6 +3,7 @@ package ubi8nodeenginebuildpackextension_test
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -391,6 +392,60 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 		})
 
+		it("should return the default when node version has NOT been requested", func() {
+
+			extensionToml, _ := readExtensionTomlTemplateFile("16")
+
+			cnbDir, err = os.MkdirTemp("", "cnb")
+			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+
+			dependencyManager := postal.NewService(cargo.NewTransport())
+
+			versionTests := []struct {
+				Name               string
+				Metadata           map[string]interface{}
+				RunDockerfileProps ubi8nodeenginebuildpackextension.RunDockerfileProps
+			}{
+				{
+					Name: "node",
+					Metadata: map[string]interface{}{
+						"version":        "",
+						"version-source": "",
+					},
+					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
+						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+					},
+				},
+			}
+
+			for _, tt := range versionTests {
+
+				generateResult, err = ubi8nodeenginebuildpackextension.Generate(dependencyManager)(packit.GenerateContext{
+					WorkingDir: workingDir,
+					CNBPath:    cnbDir,
+					Plan: packit.BuildpackPlan{
+						Entries: []packit.BuildpackPlanEntry{
+							{
+								Name:     tt.Name,
+								Metadata: tt.Metadata,
+							},
+						},
+					},
+					Stack: "ubi8-paketo",
+				})
+
+				Expect(err).NotTo(HaveOccurred())
+				Expect(generateResult).NotTo(Equal(nil))
+
+				runDockerfileContent, _ := ubi8nodeenginebuildpackextension.FillPropsToTemplate(tt.RunDockerfileProps, runDockerfileTemplate)
+
+				buf := new(strings.Builder)
+				_, _ = io.Copy(buf, generateResult.RunDockerfile)
+				Expect(buf.String()).To(Equal(runDockerfileContent))
+			}
+
+		})
+
 		it("Should error on below cases of requested node", func() {
 
 			extensionToml, _ := readExtensionTomlTemplateFile()
@@ -622,32 +677,40 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 }
 
-func readExtensionTomlTemplateFile() (string, error) {
+func readExtensionTomlTemplateFile(defaultNodeVersion ...string) (string, error) {
+	var version string
+	if len(defaultNodeVersion) == 0 {
+		version = "18.*.*"
+	} else {
+		version = defaultNodeVersion[0]
+	}
 
-	return `api = "0.7"
+	template := `
+api = "0.7"
 
-	[extension]
-	id = "redhat-runtimes/nodejs"
-	name = "RedHat Runtimes Node.js Dependency Extension"
-	version = "0.0.1"
-	description = "This extension installs the appropriate nodejs runtime via dnf"
-	
-	[metadata]
-	  [metadata.default-versions]
-		node = "18.*.*"
-	
-	  [[metadata.dependencies]]
-		id = "node"
-		name = "Ubi Node Extension"
-		stacks = ["ubi8-paketo"]
-		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
-		version = "18.1000"
+[extension]
+id = "redhat-runtimes/nodejs"
+name = "RedHat Runtimes Node.js Dependency Extension"
+version = "0.0.1"
+description = "This extension installs the appropriate nodejs runtime via dnf"
 
-	  [[metadata.dependencies]]
-		id = "node"
-		name = "Ubi Node Extension"
-		stacks = ["ubi8-paketo"]
-		source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
-		version = "16.1000"
-		`, nil
+[metadata]
+  [metadata.default-versions]
+	node = "%s"
+
+  [[metadata.dependencies]]
+	id = "node"
+	name = "Ubi Node Extension"
+	stacks = ["ubi8-paketo"]
+	source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
+	version = "18.1000"
+
+  [[metadata.dependencies]]
+	id = "node"
+	name = "Ubi Node Extension"
+	stacks = ["ubi8-paketo"]
+	source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
+	version = "16.1000"
+	`
+	return fmt.Sprintf(template, version), nil
 }
