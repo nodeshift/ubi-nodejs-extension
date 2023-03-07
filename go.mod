@@ -24,4 +24,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-// replace github.com/paketo-buildpacks/packit/v2 => ../packit
+replace github.com/paketo-buildpacks/packit/v2 => ../packit
