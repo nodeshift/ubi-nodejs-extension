@@ -1,13 +1,14 @@
-module github.com/nodeshift/ubi8-node-engine-buildack-extension
+module github.com/nodeshift/ubi8-node-engine-buildpack-extension
 
 go 1.19
 
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/Masterminds/semver/v3 v3.2.0
+	github.com/nodeshift/ubi8-node-engine-buildack-extension v0.0.0-20230317215216-7169bd679278
 	github.com/onsi/gomega v1.27.4
-	github.com/paketo-buildpacks/node-start v1.0.3
-	github.com/paketo-buildpacks/npm-start v1.0.3
+	github.com/paketo-buildpacks/node-start v1.0.4
+	github.com/paketo-buildpacks/npm-start v1.0.4
 	github.com/paketo-buildpacks/packit/v2 v2.9.0
 	github.com/sclevine/spec v1.4.0
 )
