@@ -84,13 +84,13 @@ RUN echo "CNB_STACK_ID: "`))
 		it("Should fill with properties the template/run.Dockerfile", func() {
 
 			RunDockerfileProps := RunDockerfileProps{
-				Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+				Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 			}
 
 			output, err := ubi8nodeenginebuildpackextension.FillPropsToTemplate(RunDockerfileProps, runDockerfileTemplate)
 
 			Expect(err).NotTo(HaveOccurred())
-			Expect(output).To(Equal(`FROM 172.17.0.1:5000/ubi8-paketo-run-nodejs-18`))
+			Expect(output).To(Equal(`FROM paketo-buildpacks/ubi8-paketo-run-nodejs-18`))
 
 		})
 	})
@@ -184,7 +184,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -196,7 +196,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -208,7 +208,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -220,7 +220,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -232,7 +232,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -244,7 +244,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -256,7 +256,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -268,7 +268,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -280,7 +280,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -292,7 +292,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -304,7 +304,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -367,7 +367,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -379,7 +379,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 16,
@@ -391,7 +391,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -454,7 +454,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -466,7 +466,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						"version-source": "BP_NODE_VERSION",
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-18",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-18",
 					},
 					BuildDockerfileProps:                 BuildDockerfileProps,
 					buildDockerfileExpectedNodejsVersion: 18,
@@ -642,7 +642,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						},
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 				},
 				{
@@ -661,7 +661,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						},
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 				},
 				{
@@ -672,7 +672,7 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 						},
 					},
 					RunDockerfileProps: ubi8nodeenginebuildpackextension.RunDockerfileProps{
-						Source: "172.17.0.1:5000/ubi8-paketo-run-nodejs-16",
+						Source: "paketo-buildpacks/ubi8-paketo-run-nodejs-16",
 					},
 				},
 			}
@@ -762,14 +762,14 @@ description = "This extension installs the appropriate nodejs runtime via dnf"
 	id = "node"
 	name = "Ubi Node Extension"
 	stacks = ["ubi8-paketo"]
-	source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-18"
+	source = "paketo-buildpacks/ubi8-paketo-run-nodejs-18"
 	version = "18.1000"
 
   [[metadata.dependencies]]
 	id = "node"
 	name = "Ubi Node Extension"
 	stacks = ["ubi8-paketo"]
-	source = "172.17.0.1:5000/ubi8-paketo-run-nodejs-16"
+	source = "paketo-buildpacks/ubi8-paketo-run-nodejs-16"
 	version = "16.1000"
 	`
 	return fmt.Sprintf(template, version), nil
