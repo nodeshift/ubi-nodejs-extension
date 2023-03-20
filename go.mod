@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/Masterminds/semver/v3 v3.2.0
-	github.com/onsi/gomega v1.27.1
+	github.com/onsi/gomega v1.27.4
 	github.com/paketo-buildpacks/node-start v1.0.3
 	github.com/paketo-buildpacks/npm-start v1.0.3
-	github.com/paketo-buildpacks/packit/v2 v2.8.2
+	github.com/paketo-buildpacks/packit/v2 v2.9.0
 	github.com/sclevine/spec v1.4.0
 )
 
@@ -22,5 +22,3 @@ require (
 	golang.org/x/text v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/paketo-buildpacks/packit/v2 => ../packit
