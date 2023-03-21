@@ -49,7 +49,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			workingDir = t.TempDir()
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -68,7 +69,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "server.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -89,7 +91,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "server.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -109,7 +112,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "not_a_known_name.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -131,7 +135,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "not_a_known_name.js"), nil, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -156,7 +161,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -180,7 +186,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -206,7 +213,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "src", "package.json"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
@@ -232,7 +240,8 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 			Expect(os.WriteFile(filepath.Join(workingDir, "server.js"), bytes, 0600)).To(Succeed())
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), nil, 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 			detectContext = packit.DetectContext{
 				WorkingDir: workingDir,
 			}
