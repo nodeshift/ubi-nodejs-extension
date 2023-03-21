@@ -69,7 +69,7 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 			return packit.GenerateResult{}, err
 		}
 
-		sVersion, err := semver.NewVersion(dependency.Version)
+		sVersion, _ := semver.NewVersion(dependency.Version)
 
 		NODEJS_VERSION := sVersion.Major()
 

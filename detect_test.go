@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/BurntSushi/toml"
 	. "github.com/onsi/gomega"
 	npmstart "github.com/paketo-buildpacks/npm-start"
 	"github.com/paketo-buildpacks/packit/v2"
@@ -33,12 +32,6 @@ var expectedDetectBuildPlan packit.BuildPlan = packit.BuildPlan{
 
 var expectedNotDetectBuildPlan packit.BuildPlan = packit.BuildPlan{
 	Provides: nil,
-}
-
-func readPlan(planPath string) packit.BuildPlan {
-	var plan packit.BuildPlan
-	var _, _ = toml.DecodeFile(planPath, &plan)
-	return plan
 }
 
 func testDetect(t *testing.T, context spec.G, it spec.S) {
