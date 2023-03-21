@@ -122,7 +122,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(os.WriteFile(filepath.Join(workingDir, "plan"), buf.Bytes(), 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		it("Node no longer requested in buildplan", func() {
@@ -153,7 +154,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(os.WriteFile(planPath, buf.Bytes(), 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 
 		})
 
@@ -602,7 +604,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 
 			Expect(os.WriteFile(planPath, buf.Bytes(), 0600)).To(Succeed())
 
-			os.Chdir(workingDir)
+			err = os.Chdir(workingDir)
+			Expect(err).NotTo(HaveOccurred())
 		})
 
 		it("Should respect the priorities and return the proper Node.js version", func() {
