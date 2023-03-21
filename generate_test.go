@@ -166,7 +166,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
@@ -349,8 +350,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile("16")
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			err = os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
@@ -437,8 +438,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			err = os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
@@ -513,8 +514,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			err = os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
@@ -619,8 +620,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			err = os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
@@ -711,8 +712,8 @@ func testGenerate(t *testing.T, context spec.G, it spec.S) {
 			extensionToml, _ := readExtensionTomlTemplateFile()
 
 			cnbDir, err = os.MkdirTemp("", "cnb")
-			err = os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)
 			Expect(err).NotTo(HaveOccurred())
+			Expect(os.WriteFile(cnbDir+"/extension.toml", []byte(extensionToml), 0600)).To(Succeed())
 
 			dependencyManager := postal.NewService(cargo.NewTransport())
 
