@@ -106,7 +106,7 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 		}
 
 		return packit.GenerateResult{
-			ExtendConfig:    packit.ExtendConfig{Build: packit.ExtendImageConfig{[]packit.ExtendImageConfigArg{}}},
+			ExtendConfig:    packit.ExtendConfig{Build: packit.ExtendImageConfig{Args: []packit.ExtendImageConfigArg{}}},
 			BuildDockerfile: strings.NewReader(buildDockerfileContent),
 			RunDockerfile:   strings.NewReader(runDockerfileContent),
 		}, nil
