@@ -38,10 +38,6 @@ type BuildDockerfileProps struct {
 //go:embed templates/build.Dockerfile
 var buildDockerfileTemplate string
 
-type extensionTomlProps struct {
-	NODEJS_VERSION string
-}
-
 func testFillPropsToTemplate(t *testing.T, context spec.G, it spec.S) {
 
 	var (
