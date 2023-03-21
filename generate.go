@@ -73,11 +73,10 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 
 		NODEJS_VERSION := sVersion.Major()
 
-		// Below variables has to be fetch from the env
-		// CNB_PLATFORM_API := os.Getenv("CNB_PLATFORM_API")
+		// These variables have to be fetched from the env
 		CNB_STACK_ID := os.Getenv("CNB_STACK_ID")
 
-		/* Creating build.Dockerfile*/
+		/* Creating build.Dockerfile */
 
 		buildDockerfileProps := BuildDockerfileProps{
 			NODEJS_VERSION: NODEJS_VERSION,
@@ -93,7 +92,7 @@ func Generate(dependencyManager DependencyManager) packit.GenerateFunc {
 			return packit.GenerateResult{}, err
 		}
 
-		/* Creating run.Dockerfile*/
+		/* Creating run.Dockerfile */
 
 		RunDockerfileProps := RunDockerfileProps{
 			Source: dependency.Source,
