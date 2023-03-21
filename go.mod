@@ -1,4 +1,4 @@
-module github.com/nodeshift/ubi8-node-engine-buildpack-extension
+module github.com/nodeshift/ubi-nodejs-extension
 
 go 1.19
 
