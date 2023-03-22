@@ -111,7 +111,7 @@ ubi extension.
    1. run `pack build test-app --path ./app-dir --builder localhost:5000/test-builder --network host -v`
       where test-app will be the name of the image built and app-dir is
       directory that contains your Node.js application. Replace
-      `172.17.0.1:5000` with the host:port for the public repository
+      `localhost:5000` with the host:port for the public repository
        if you are not using a local repostiory.
    1. run your application with `docker run -p 8080:8080 test-app` replacing
       `8080:8080` with the port on which your application listens.
