@@ -1,8 +1,11 @@
 /bin
+/build
+.DS_Store
+.idea
 
 ## remove this line when the PR https://github.com/buildpacks/pack/pull/1661 has been merged
-/.bin/create-package
-/.bin/jam
+.bin/create-package
+.bin/jam
 
 ## and add below one
 # /.bin

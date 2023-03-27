@@ -17,11 +17,18 @@ function util::tools::path::export() {
 }
 
 function util::tools::jam::install() {
-  local dir
+  local dir token
+  token=""
+
   while [[ "${#}" != 0 ]]; do
     case "${1}" in
       --directory)
         dir="${2}"
+        shift 2
+        ;;
+
+      --token)
+        token="${2}"
         shift 2
         ;;
 
@@ -49,14 +56,26 @@ function util::tools::jam::install() {
   util::tools::path::export "${dir}"
 
   if [[ ! -f "${dir}/jam" ]]; then
-    local version
+    local version curl_args
+
     version="$(jq -r .jam "$(dirname "${BASH_SOURCE[0]}")/tools.json")"
 
+    curl_args=(
+      "--fail"
+      "--silent"
+      "--location"
+      "--output" "${dir}/jam"
+    )
+
+    if [[ "${token}" != "" ]]; then
+      curl_args+=("--header" "Authorization: Token ${token}")
+    fi
+
     util::print::title "Installing jam ${version}"
+
     curl "https://github.com/paketo-buildpacks/jam/releases/download/${version}/jam-${os}" \
-      --silent \
-      --location \
-      --output "${dir}/jam"
+      "${curl_args[@]}"
+
     chmod +x "${dir}/jam"
   else
     util::print::info "Using $("${dir}"/jam version)"
@@ -64,11 +83,18 @@ function util::tools::jam::install() {
 }
 
 function util::tools::pack::install() {
-  local dir
+  local dir token
+  token=""
+
   while [[ "${#}" != 0 ]]; do
     case "${1}" in
       --directory)
         dir="${2}"
+        shift 2
+        ;;
+
+      --token)
+        token="${2}"
         shift 2
         ;;
 
@@ -96,20 +122,87 @@ function util::tools::pack::install() {
   esac
 
   if [[ ! -f "${dir}/pack" ]]; then
-    local version
+    local version curl_args
+
     version="$(jq -r .pack "$(dirname "${BASH_SOURCE[0]}")/tools.json")"
 
+
+    tmp_location="/tmp/pack.tgz"
+    curl_args=(
+      "--fail"
+      "--silent"
+      "--location"
+      "--output" "${tmp_location}"
+    )
+
+    if [[ "${token}" != "" ]]; then
+      curl_args+=("--header" "Authorization: Token ${token}")
+    fi
+
     util::print::title "Installing pack ${version}"
+
     curl "https://github.com/buildpacks/pack/releases/download/${version}/pack-${version}-${os}.tgz" \
-      --silent \
-      --location \
-      --output /tmp/pack.tgz
-    tar xzf /tmp/pack.tgz -C "${dir}"
+      "${curl_args[@]}"
+
+    tar xzf "${tmp_location}" -C "${dir}"
     chmod +x "${dir}/pack"
-    rm /tmp/pack.tgz
+
+    rm "${tmp_location}"
   else
     util::print::info "Using pack $("${dir}"/pack version)"
   fi
+}
+
+function util::tools::packager::install () {
+    local dir
+    while [[ "${#}" != 0 ]]; do
+      case "${1}" in
+        --directory)
+          dir="${2}"
+          shift 2
+          ;;
+
+        *)
+          util::print::error "unknown argument \"${1}\""
+          ;;
+
+      esac
+    done
+
+    mkdir -p "${dir}"
+    util::tools::path::export "${dir}"
+
+    if [[ ! -f "${dir}/packager" ]]; then
+      util::print::title "Installing packager"
+      GOBIN="${dir}" go install github.com/cloudfoundry/libcfbuildpack/packager@latest
+    fi
+}
+
+function util::tools::create-package::install () {
+  local dir version
+    while [[ "${#}" != 0 ]]; do
+      case "${1}" in
+        --directory)
+          dir="${2}"
+          shift 2
+          ;;
+
+        *)
+          util::print::error "unknown argument \"${1}\""
+          ;;
+
+      esac
+    done
+
+    version="$(jq -r .createpackage "$(dirname "${BASH_SOURCE[0]}")/tools.json")"
+
+    mkdir -p "${dir}"
+    util::tools::path::export "${dir}"
+
+    if [[ ! -f "${dir}/create-package" ]]; then
+      util::print::title "Installing create-package"
+      GOBIN="${dir}" go install -ldflags="-s -w" "github.com/paketo-buildpacks/libpak/cmd/create-package@${version}"
+    fi
 }
 
 function util::tools::tests::checkfocus() {
