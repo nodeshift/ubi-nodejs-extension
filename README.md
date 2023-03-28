@@ -33,15 +33,16 @@ ubi extension.
 1. Get a current version of pack and ensure it is on your path.
    It should be at least version 0.28 or later. The releases are
    available from [here](https://github.com/buildpacks/pack/releases).
-1. Clone the repository for this extension 
+1. Clone the repository for this extension
 1. cd into the directory into which you have cloned the repository
    and run scripts/build.sh. This builds the binaries for the extension.
 1. Enable experimental features in pack by running
    `pack config experimental true`. This is needed because extensions
-    are currently experimental.
+   are currently experimental.
 1. Create a builder which includes the extension. The extension works together
    with the existing Paketo node.js buildpack so a minimal builder
    requires both the node.js buildpack and the extention as follows:
+
    ```
    description = "Sample builder that uses ubi Node.js extension to support Node.js apps"
 
@@ -72,14 +73,16 @@ ubi extension.
      build-image = "quay.io/midawson/ubi8-paketo-build"
      run-image = "quay.io/midawson/ubi8-paketo-run"
    ```
+
    A stack requires a build-image and a run-image and the extension
    requires a run image for each supported Node.js stream. We have made the
-   following images available for initial testing while we work on 
+   following images available for initial testing while we work on
    building out the infrastruture to regularly build the required images:
-   * quay.io/midawson/ubi8-paketo-build
-   * quay.io/midawson/ubi8-paketo-run
-   * quay.io/midawson/ubi8-paketo-run-nodejs-18
-   * quay.io/midawson/ubi8-paketo-run-nodejs-16
+
+   - quay.io/midawson/ubi8-paketo-build
+   - quay.io/midawson/ubi8-paketo-run
+   - quay.io/midawson/ubi8-paketo-run-nodejs-18
+   - quay.io/midawson/ubi8-paketo-run-nodejs-16
 
    The `ubi8-paketo-run-nodejs-XX` are simply the ubi8/nodejs-XX-minimal
    images with the additional metadata and user/groups required by the
@@ -94,6 +97,7 @@ ubi extension.
    fade.
 
    To create the builder:
+
    1. create a file called builder.toml with the minimal builder toml
       shown above. Modify the uri for the ubi-nodejs-extension so that
       if reflects the path where your clone of the ubi-nodejs-extesion
@@ -154,6 +158,7 @@ This could be useful if your app is a part of a monorepo.
 ## Run Tests
 
 To run all unit tests, run:
+
 ```
 ./scripts/unit.sh
 ```
@@ -161,6 +166,26 @@ To run all unit tests, run:
 !!! Work in progress the integration.sh script does not yet exist.
 
 To run all integration tests, run:
+
 ```
 /scripts/integration.sh
+```
+
+## Package buildpack (Generate .tgx & .cnb files)
+
+To generate `buildpackage.cnb` and `buildpack.tgz` files
+
+Pre Process (till this PR https://github.com/buildpacks/pack/pull/1661 is on the release pack release )
+
+1. Clone `https://github.com/itsdarshankumar/pack.git`
+1. Checkout the `extension-package` branch
+1. Run the command `make build`
+1. A binary file called `./out/pack` should be generated.
+1. copy this binary file under `ubi-nodejs-extension./bin` directory
+   - optinaly you can use this command `mkdir -p /<your>/<path>/<to>/ubi-nodejs-extension/.bin/ && cp  /<your>/<path>/<to>/pack/out/pack   /<your>/<path>/<to>/ubi-nodejs-extension/.bin/`
+
+Run below command under the ubi-nodejs-extension directory to generate `buildpackage.cnb` and `buildpack.tgz` files.
+
+```
+./scripts/package.sh --version 0.0.1
 ```
