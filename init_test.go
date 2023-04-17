@@ -1,4 +1,4 @@
-package ubi8nodeenginebuildpackextension_test
+package ubinodejsextension_test
 
 import (
 	"testing"

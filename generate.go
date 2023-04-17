@@ -1,4 +1,4 @@
-package ubi8nodeenginebuildpackextension
+package ubinodejsextension
 
 import (
 	"bytes"
