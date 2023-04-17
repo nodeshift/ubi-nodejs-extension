@@ -1,10 +1,10 @@
-package ubi8nodeenginebuildpackextension_test
+package ubinodejsextension_test
 
 import (
 	"encoding/json"
 	"testing"
 
-	ubi8nodeenginebuildpackextension "github.com/nodeshift/ubi8-node-engine-buildack-extension"
+	ubinodejsextension "github.com/nodeshift/ubi-nodejs-extension"
 
 	//	"github.com/paketo-buildpacks/packit/v2"
 	"os"
@@ -57,7 +57,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("indicates it does not participate", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).To(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedNotDetectBuildPlan))
 		})
@@ -77,7 +77,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -99,7 +99,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -120,7 +120,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -143,7 +143,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -169,7 +169,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("indicates it does not participate", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).To(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedNotDetectBuildPlan))
 		})
@@ -194,7 +194,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -221,7 +221,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
@@ -248,7 +248,7 @@ func testDetect(t *testing.T, context spec.G, it spec.S) {
 		})
 
 		it("detects", func() {
-			detectResult, err = ubi8nodeenginebuildpackextension.Detect()(detectContext)
+			detectResult, err = ubinodejsextension.Detect()(detectContext)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(detectResult.Plan).To(Equal(expectedDetectBuildPlan))
 		})
