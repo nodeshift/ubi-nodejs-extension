@@ -1274,10 +1274,10 @@ github.com/opencontainers/selinux v1.10.1/go.mod h1:2i0OySw99QjzBBQByd1Gr9gSjvuh
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/paketo-buildpacks/libreload-packit v0.0.1 h1:K1HhNAqBSzRpefwGOcvdchZwyeNTgNJL9SC7V4paYt8=
 github.com/paketo-buildpacks/libreload-packit v0.0.1/go.mod h1:ZWE3U94Z18yJk8Pc1mP852l9phQsrsZ+An2U98g0rWw=
-github.com/paketo-buildpacks/node-start v1.0.6 h1:AJ7vRoNVL4t2RHBwYOlBm3KQNjA/DTu1SV/zOk6JtvE=
-github.com/paketo-buildpacks/node-start v1.0.6/go.mod h1:VHib9OaR9KfEqAxYS/qWa/4DcC/R+2zTMiHhqI9l2uM=
-github.com/paketo-buildpacks/npm-start v1.0.6 h1:EaWjf7VK0PzIp6tBdyvfOft5H7nOetM3yVtoEuWemIo=
-github.com/paketo-buildpacks/npm-start v1.0.6/go.mod h1:4I5mRVh4/4ANporeI+DA9z7WwyfQneGlx3KjnMBz+KI=
+github.com/paketo-buildpacks/node-start v1.0.7 h1:D+y0LagUSRWTDMUWPp8TvMb3CfZaddDP0gkoDuo7X3w=
+github.com/paketo-buildpacks/node-start v1.0.7/go.mod h1:sRUkWKxykXq9YVA3Fmufeg49OvtrnfBM425oMoKSCr8=
+github.com/paketo-buildpacks/npm-start v1.0.7 h1:O5REW+BnrRnzg9vxbPEUVY0rzsxake9rpuq2Pa85/Ps=
+github.com/paketo-buildpacks/npm-start v1.0.7/go.mod h1:msgvguvOMdENYorWXnOzMSIRVGlivgjqZJvedH/SO7Q=
 github.com/paketo-buildpacks/packit/v2 v2.9.0 h1:g5XofjihAI6EILAc/ONpO7Put+80kDh/UYr2RVRQkas=
 github.com/paketo-buildpacks/packit/v2 v2.9.0/go.mod h1:oNvvMy4mF0DFJ7xFVVTzEb6OGHi5UtfJJviw0wzmRGg=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
