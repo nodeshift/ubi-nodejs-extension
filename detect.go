@@ -5,20 +5,13 @@ import (
 	"path/filepath"
 
 	"github.com/paketo-buildpacks/libnodejs"
-	nodestart "github.com/paketo-buildpacks/node-start"
 	"github.com/paketo-buildpacks/packit/v2"
 )
-
-// functionality from node-start
-func nodeApplicationExists(workingDir string, applicationFinder nodestart.ApplicationFinder) (path string, err error) {
-	return applicationFinder.Find(workingDir, os.Getenv("BP_LAUNCHPOINT"), os.Getenv("BP_NODE_PROJECT_PATH"))
-}
 
 func Detect() packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		// likely move these to main.go ?
 		workingDir := context.WorkingDir
-		nodeApplicationFinder := nodestart.NewNodeApplicationFinder()
 
 		projectPath, err := libnodejs.FindProjectPath(context.WorkingDir)
 		if err != nil {
@@ -32,7 +25,7 @@ func Detect() packit.DetectFunc {
 
 		if err != nil || !pkg.HasStartScript() {
 			// no package.json so look for Node.js application files
-			path, err := nodeApplicationExists(workingDir, nodeApplicationFinder)
+			path, err := libnodejs.FindNodeApplication(workingDir)
 			if err != nil {
 				return packit.DetectResult{}, err
 			}
