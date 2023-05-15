@@ -9,7 +9,7 @@ require (
 	github.com/onsi/gomega v1.27.6
 	github.com/paketo-buildpacks/node-start v1.0.8
 	github.com/paketo-buildpacks/npm-start v1.0.8
-	github.com/paketo-buildpacks/packit/v2 v2.10.0
+	github.com/paketo-buildpacks/packit/v2 v2.11.0
 	github.com/sclevine/spec v1.4.0
 )
 
@@ -20,7 +20,7 @@ require (
 	github.com/paketo-buildpacks/libreload-packit v0.0.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
