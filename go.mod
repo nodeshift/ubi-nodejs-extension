@@ -7,8 +7,8 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/nodeshift/ubi8-node-engine-buildack-extension v0.0.0-20230317215216-7169bd679278
 	github.com/onsi/gomega v1.27.8
-	github.com/paketo-buildpacks/node-start v1.0.10
-	github.com/paketo-buildpacks/npm-start v1.0.10
+	github.com/paketo-buildpacks/node-start v1.0.11
+	github.com/paketo-buildpacks/npm-start v1.0.11
 	github.com/paketo-buildpacks/packit/v2 v2.11.0
 	github.com/sclevine/spec v1.4.0
 )
