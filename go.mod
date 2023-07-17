@@ -16,7 +16,7 @@ require (
 require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
-	github.com/paketo-buildpacks/libnodejs v0.0.2 // indirect
+	github.com/paketo-buildpacks/libnodejs v0.1.0 // indirect
 	github.com/paketo-buildpacks/libreload-packit v0.0.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/ulikunitz/xz v0.5.11 // indirect
